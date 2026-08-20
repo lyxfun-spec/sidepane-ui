@@ -14,25 +14,16 @@ interface ConversationPanelProps {
 }
 
 export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
-  const {
-    state,
-    switchConversation,
-    renameConversation,
-    deleteConversation,
-    togglePin,
-    setMarkColor,
-  } = useChat();
+  const { state, switchConversation, renameConversation, deleteConversation } =
+    useChat();
   const { showMenu } = useContextMenu();
   const { confirm, prompt } = useModal();
   const { push } = useToast();
 
-  const { pinned, normal } = useMemo(() => {
-    const list = [...state.conversations].sort((a, b) => b.updatedAt - a.updatedAt);
-    return {
-      pinned: list.filter((c) => c.pinned),
-      normal: list.filter((c) => !c.pinned),
-    };
-  }, [state.conversations]);
+  const sorted = useMemo(
+    () => [...state.conversations].sort((a, b) => b.updatedAt - a.updatedAt),
+    [state.conversations]
+  );
 
   // Esc 关闭面板
   useEffect(() => {
@@ -58,14 +49,6 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
           }),
       },
       {
-        label: conv.pinned ? '取消置顶' : '置顶',
-        onClick: () => togglePin(conv.id),
-      },
-      {
-        label: '标记',
-        onMarkPick: (color) => setMarkColor(conv.id, color),
-      },
-      {
         label: '删除',
         danger: true,
         onClick: () =>
@@ -83,43 +66,6 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
     ]);
   };
 
-  const renderGroup = (items: Conversation[]) =>
-    items.map((conv) => {
-      const isStreaming = state.streamingId === conv.id;
-      const isActive = state.activeId === conv.id;
-      return (
-        <div
-          key={conv.id}
-          className={`${styles.row} ${isActive ? styles.active : ''} ${isStreaming ? styles.streaming : ''}`}
-          onClick={() => {
-            switchConversation(conv.id);
-            onClose();
-          }}
-        >
-          {conv.markColor && (
-            <span className={styles.dot} style={{ background: conv.markColor }} />
-          )}
-          <span
-            className={styles.title}
-            style={conv.markColor ? { color: conv.markColor } : undefined}
-            title={conv.title}
-          >
-            {conv.title}
-          </span>
-          {isStreaming && <span className={styles.spinner} title="正在生成" />}
-          <button
-            type="button"
-            className={styles.more}
-            title="更多"
-            aria-label="更多操作"
-            onClick={(e) => openRowMenu(e, conv)}
-          >
-            <Icon name="dots" size={15} />
-          </button>
-        </div>
-      );
-    });
-
   return (
     <>
       <div
@@ -127,29 +73,38 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
         onClick={onClose}
       />
       <aside className={`${styles.panel} ${open ? styles.open : ''}`}>
-        <div className={styles.header}>
-          <span className={styles.headerTitle}>对话列表</span>
-          <button
-            type="button"
-            className={styles.closeBtn}
-            onClick={onClose}
-            title="关闭"
-            aria-label="关闭会话列表"
-          >
-            <Icon name="close" size={15} />
-          </button>
-        </div>
         <div className={styles.list}>
-          {state.conversations.length === 0 ? (
+          {sorted.length === 0 ? (
             <div className={styles.empty}>暂无对话</div>
           ) : (
-            <>
-              {renderGroup(pinned)}
-              {pinned.length > 0 && normal.length > 0 && (
-                <div className={styles.divider} />
-              )}
-              {renderGroup(normal)}
-            </>
+            sorted.map((conv) => {
+              const isStreaming = state.streamingId === conv.id;
+              const isActive = state.activeId === conv.id;
+              return (
+                <div
+                  key={conv.id}
+                  className={`${styles.row} ${isActive ? styles.active : ''} ${isStreaming ? styles.streaming : ''}`}
+                  onClick={() => {
+                    switchConversation(conv.id);
+                    onClose();
+                  }}
+                >
+                  <span className={styles.title} title={conv.title}>
+                    {conv.title}
+                  </span>
+                  {isStreaming && <span className={styles.spinner} title="正在生成" />}
+                  <button
+                    type="button"
+                    className={styles.more}
+                    title="更多"
+                    aria-label="更多操作"
+                    onClick={(e) => openRowMenu(e, conv)}
+                  >
+                    <Icon name="dots" size={15} />
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
       </aside>

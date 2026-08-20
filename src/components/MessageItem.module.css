@@ -45,9 +45,9 @@
 .footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 6px;
-  min-height: 26px;
+  min-height: 28px;
   margin-top: 2px;
 }
 
@@ -68,20 +68,14 @@
   border: none;
   border-radius: var(--radius-s);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.12s ease, background 0.12s ease;
-}
-
-.aiBody:hover .copyBtn,
-.copyBtn:focus-visible {
-  opacity: 1;
+  transition: color 0.12s ease, background 0.12s ease;
 }
 
 .copyBtn:hover {
   background: var(--hover);
-  color: var(--text-primary);
+  color: var(--accent);
 }
 
 @keyframes blink {

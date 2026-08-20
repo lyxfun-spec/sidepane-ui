@@ -43,47 +43,6 @@
   background: var(--danger-subtle);
 }
 
-.marks {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-}
-
-.swatch {
-  width: 18px;
-  height: 18px;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.swatch:hover {
-  transform: scale(1.15);
-}
-
-.swatch.selected {
-  border-color: var(--text-primary);
-}
-
-.clear {
-  margin-left: 2px;
-  padding: 3px 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: var(--radius-s);
-}
-
-.clear:hover {
-  background: var(--hover);
-  color: var(--text-primary);
-}
-
 @keyframes pop-in {
   from {
     transform: scale(0.97);

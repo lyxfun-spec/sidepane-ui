@@ -1,20 +1,23 @@
 .inputArea {
   flex-shrink: 0;
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  padding: 0 14px 14px;
+  /* 悬浮输入框：无边框分区、无背景填充 */
+  background: transparent;
 }
 
 .box {
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-m);
+  border-radius: var(--radius-l);
   background: var(--surface);
+  box-shadow: var(--shadow);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .box:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent) inset;
+  box-shadow:
+    0 0 0 1px var(--accent) inset,
+    var(--shadow);
 }
 
 .taWrap {
@@ -45,32 +48,28 @@
 .toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 4px 8px 6px;
+  justify-content: flex-end;
+  padding: 4px 6px 6px;
 }
 
-.hint {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  user-select: none;
-}
-
+/* Yino 风格：无底色纯图标按钮，用颜色表达状态 */
 .sendBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   border: none;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .sendBtn:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent-subtle);
 }
 
 .sendBtn:active:not(:disabled) {
@@ -78,10 +77,12 @@
 }
 
 .sendBtn:disabled {
-  background: var(--border-strong);
+  color: var(--text-tertiary);
+  opacity: 0.45;
   cursor: default;
 }
 
-.stopBtn {
-  border-radius: 8px;
+.stopBtn:hover:not(:disabled) {
+  background: var(--danger-subtle);
+  color: var(--danger);
 }

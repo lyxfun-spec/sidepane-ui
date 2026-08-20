@@ -48,7 +48,6 @@ export function InputArea() {
           <ScrollbarTrack containerRef={taRef} deps={[value.length]} />
         </div>
         <div className={styles.toolbar}>
-          <span className={styles.hint}>Enter 发送 · Shift+Enter 换行</span>
           {isStreaming ? (
             <button
               type="button"

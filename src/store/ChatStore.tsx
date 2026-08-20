@@ -32,8 +32,6 @@ type Action =
   | { type: 'SWITCH'; id: string }
   | { type: 'RENAME'; id: string; title: string }
   | { type: 'DELETE'; id: string }
-  | { type: 'TOGGLE_PIN'; id: string }
-  | { type: 'SET_MARK'; id: string; color: string | null }
   | { type: 'SET_DRAFT'; id: string; text: string }
   | { type: 'SEND_USER'; id: string; text: string }
   | { type: 'APPEND_TOKEN'; id: string; token: string }
@@ -50,8 +48,6 @@ function reducer(state: ChatState, action: Action): ChatState {
         id: uid(),
         title: '新对话',
         messages: [],
-        pinned: false,
-        markColor: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -88,22 +84,6 @@ function reducer(state: ChatState, action: Action): ChatState {
       return { ...state, conversations, drafts, activeId, streamingId };
     }
 
-    case 'TOGGLE_PIN':
-      return {
-        ...state,
-        conversations: state.conversations.map((c) =>
-          c.id === action.id ? { ...c, pinned: !c.pinned } : c
-        ),
-      };
-
-    case 'SET_MARK':
-      return {
-        ...state,
-        conversations: state.conversations.map((c) =>
-          c.id === action.id ? { ...c, markColor: action.color } : c
-        ),
-      };
-
     case 'SET_DRAFT':
       return { ...state, drafts: { ...state.drafts, [action.id]: action.text } };
 
@@ -131,8 +111,6 @@ function reducer(state: ChatState, action: Action): ChatState {
           id: action.id,
           title: truncateTitle(action.text),
           messages: [],
-          pinned: false,
-          markColor: null,
           createdAt: now,
           updatedAt: now,
         };
@@ -214,8 +192,6 @@ interface ChatContextValue {
   switchConversation: (id: string) => void;
   renameConversation: (id: string, title: string) => void;
   deleteConversation: (id: string) => void;
-  togglePin: (id: string) => void;
-  setMarkColor: (id: string, color: string | null) => void;
   setDraft: (text: string) => void;
 }
 
@@ -276,13 +252,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'DELETE', id });
   }, []);
 
-  const togglePin = useCallback((id: string) => dispatch({ type: 'TOGGLE_PIN', id }), []);
-
-  const setMarkColor = useCallback(
-    (id: string, color: string | null) => dispatch({ type: 'SET_MARK', id, color }),
-    []
-  );
-
   const setDraft = useCallback((text: string) => {
     const s = stateRef.current;
     if (!s.activeId) return;
@@ -298,8 +267,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       switchConversation,
       renameConversation,
       deleteConversation,
-      togglePin,
-      setMarkColor,
       setDraft,
     }),
     [
@@ -310,8 +277,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       switchConversation,
       renameConversation,
       deleteConversation,
-      togglePin,
-      setMarkColor,
       setDraft,
     ]
   );

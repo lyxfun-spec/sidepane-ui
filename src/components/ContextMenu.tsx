@@ -9,23 +9,18 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { MARK_COLORS } from '../types';
 import styles from './ContextMenu.module.css';
 
 export interface MenuItem {
   label: string;
   danger?: boolean;
   onClick?: () => void;
-  /** 提供该字段时，点击该项进入"标记颜色"选择视图 */
-  onMarkPick?: (color: string | null) => void;
 }
 
 interface MenuState {
   x: number;
   y: number;
   items: MenuItem[];
-  view: 'menu' | 'marks';
-  currentMark: string | null;
 }
 
 interface ContextMenuContextValue {
@@ -43,7 +38,7 @@ export function ContextMenuProvider({ children }: { children: ReactNode }) {
   const close = useCallback(() => setMenu(null), []);
 
   const showMenu = useCallback((x: number, y: number, items: MenuItem[]) => {
-    setMenu({ x, y, items, view: 'menu', currentMark: null });
+    setMenu({ x, y, items });
   }, []);
 
   // 边界修正：菜单不超出视口
@@ -74,9 +69,6 @@ export function ContextMenuProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ showMenu }), [showMenu]);
 
-  const markItem = menu?.items.find((i) => i.onMarkPick);
-  const markColor = menu?.view === 'marks' ? menu.currentMark : null;
-
   return (
     <ContextMenuContext.Provider value={value}>
       {children}
@@ -89,54 +81,20 @@ export function ContextMenuProvider({ children }: { children: ReactNode }) {
             style={{ left: menu.x, top: menu.y }}
             role="menu"
           >
-            {menu.view === 'marks' && markItem ? (
-              <div className={styles.marks}>
-                {MARK_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    className={`${styles.swatch} ${markColor === color ? styles.selected : ''}`}
-                    style={{ background: color }}
-                    title={color}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      markItem.onMarkPick?.(color);
-                      close();
-                    }}
-                  />
-                ))}
-                <button
-                  className={styles.clear}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    markItem.onMarkPick?.(null);
-                    close();
-                  }}
-                >
-                  清除
-                </button>
-              </div>
-            ) : (
-              menu.items.map((item, idx) => (
-                <button
-                  key={idx}
-                  className={`${styles.item} ${item.danger ? styles.danger : ''}`}
-                  role="menuitem"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (item.onMarkPick) {
-                      setMenu((m) =>
-                        m ? { ...m, view: 'marks', currentMark: null } : m
-                      );
-                      return;
-                    }
-                    item.onClick?.();
-                    close();
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))
-            )}
+            {menu.items.map((item, idx) => (
+              <button
+                key={idx}
+                className={`${styles.item} ${item.danger ? styles.danger : ''}`}
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  item.onClick?.();
+                  close();
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
         </>
       )}

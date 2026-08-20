@@ -4,4 +4,6 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  /* 裁剪会话面板溢出的阴影，避免盖住顶栏与输入框 */
+  overflow: hidden;
 }
