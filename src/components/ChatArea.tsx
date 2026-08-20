@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 import type * as React from 'react';
 import { useChat } from '../store/ChatStore';
 import { useContextMenu } from './ContextMenu';
@@ -12,7 +18,12 @@ import styles from './ChatArea.module.css';
 
 const AT_BOTTOM_MARGIN = 24;
 
-export function ChatArea() {
+interface ChatAreaProps {
+  /** 悬浮输入框根元素：滚动条轨道、"回到底部"按钮与底部留白均止于输入框上方 */
+  inputAreaRef: RefObject<HTMLDivElement | null>;
+}
+
+export function ChatArea({ inputAreaRef }: ChatAreaProps) {
   const { state } = useChat();
   const { showMenu } = useContextMenu();
   const { push } = useToast();
@@ -22,15 +33,39 @@ export function ChatArea() {
   const isAtBottomRef = useRef(true);
   const bottomPadRef = useRef(0);
   const [showJump, setShowJump] = useState(false);
+  const [inputH, setInputH] = useState(0);
 
   const lastMsg = conv ? conv.messages[conv.messages.length - 1] : null;
   const lastContentLen = lastMsg?.content.length ?? 0;
+
+  // 根据悬浮输入框高度设置消息底部留白（消息可完整滚到输入框上方）
+  const applyPadding = (scroller: HTMLDivElement) => {
+    const h = inputAreaRef.current?.offsetHeight ?? 0;
+    const pb = Math.max(80, h - 10);
+    scroller.style.paddingBottom = `${pb}px`;
+    bottomPadRef.current = pb;
+  };
+
+  // 实时测量悬浮输入框高度（textarea 增高时联动）
+  useEffect(() => {
+    const input = inputAreaRef.current;
+    if (!input) return;
+    const update = () => {
+      setInputH(input.offsetHeight);
+      const scroller = scrollerRef.current;
+      if (scroller) applyPadding(scroller);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(input);
+    return () => ro.disconnect();
+  }, [inputAreaRef]);
 
   // 切换会话：直接到底部
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    bottomPadRef.current = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+    applyPadding(el);
     el.scrollTop = el.scrollHeight;
     isAtBottomRef.current = true;
     setShowJump(false);
@@ -40,7 +75,7 @@ export function ChatArea() {
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    bottomPadRef.current = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+    applyPadding(el);
     if (!isAtBottomRef.current) return;
     el.scrollTop = el.scrollHeight;
   }, [conv?.messages.length, lastMsg?.status, lastContentLen]);
@@ -120,11 +155,12 @@ export function ChatArea() {
           ))}
         </div>
       </div>
-      <ScrollbarTrack containerRef={scrollerRef} />
+      <ScrollbarTrack containerRef={scrollerRef} bottomOffset={inputH + 4} />
       {showJump && (
         <button
           type="button"
           className={styles.jump}
+          style={{ bottom: inputH + 12 }}
           onClick={jumpToBottom}
           title="回到底部"
           aria-label="回到底部"

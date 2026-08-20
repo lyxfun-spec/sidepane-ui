@@ -7,13 +7,19 @@ interface ScrollbarTrackProps {
   containerRef: RefObject<HTMLElement | null>;
   /** 内容变化时触发重新测量（如输入框的 value 长度） */
   deps?: unknown[];
+  /** 轨道底部偏移（px），默认 2；用于让轨道止于悬浮输入框上方 */
+  bottomOffset?: number;
 }
 
 /**
  * 自定义细滚动条：视觉统一（Fluent 浅色风）。
  * 支持拖拽滑块、点击轨道跳转；仅当内容可滚动时显示。
  */
-export function ScrollbarTrack({ containerRef, deps = [] }: ScrollbarTrackProps) {
+export function ScrollbarTrack({
+  containerRef,
+  deps = [],
+  bottomOffset = 2,
+}: ScrollbarTrackProps) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const thumbRef = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
@@ -91,6 +97,7 @@ export function ScrollbarTrack({ containerRef, deps = [] }: ScrollbarTrackProps)
     <div
       ref={trackRef}
       className={`${styles.track} ${visible ? styles.visible : ''}`}
+      style={{ bottom: bottomOffset }}
       onPointerDown={clickTrack}
     >
       <div

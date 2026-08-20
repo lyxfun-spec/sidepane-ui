@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 import type * as React from 'react';
 import { useChat } from '../store/ChatStore';
 import { ScrollbarTrack } from './ScrollbarTrack';
@@ -7,7 +7,7 @@ import styles from './InputArea.module.css';
 
 const MAX_INPUT_HEIGHT = 160;
 
-export function InputArea() {
+export const InputArea = forwardRef<HTMLDivElement>(function InputArea(_props, ref) {
   const { state, send, stop, setDraft } = useChat();
 
   const conv = state.conversations.find((c) => c.id === state.activeId) ?? null;
@@ -34,7 +34,7 @@ export function InputArea() {
   };
 
   return (
-    <div className={styles.inputArea}>
+    <div ref={ref} className={styles.inputArea}>
       <div className={styles.box}>
         <div className={styles.taWrap}>
           <textarea
@@ -74,4 +74,4 @@ export function InputArea() {
       </div>
     </div>
   );
-}
+});
