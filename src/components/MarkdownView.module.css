@@ -1,0 +1,169 @@
+.markdown {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown p {
+  margin: 0 0 10px;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  margin: 14px 0 8px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.markdown h1 {
+  font-size: 17px;
+}
+
+.markdown h2 {
+  font-size: 15px;
+}
+
+.markdown h3 {
+  font-size: 14px;
+}
+
+.markdown h4 {
+  font-size: 13px;
+}
+
+.markdown ul,
+.markdown ol {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+.markdown li {
+  margin: 2px 0;
+}
+
+.markdown code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--canvas);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.markdown pre {
+  margin: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.markdown pre::-webkit-scrollbar {
+  display: none;
+}
+
+.markdown pre code {
+  display: block;
+  background: none;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.codeBlock {
+  margin: 0 0 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--surface-subtle);
+}
+
+.codeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--canvas);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.codeLang {
+  text-transform: lowercase;
+}
+
+.codeCopy {
+  padding: 2px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.codeCopy:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.tableWrap {
+  margin: 0 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.markdown th,
+.markdown td {
+  padding: 5px 8px;
+  border: 1px solid var(--border-strong);
+  text-align: left;
+}
+
+.markdown th {
+  background: var(--canvas);
+  font-weight: 600;
+}
+
+.markdown blockquote {
+  margin: 0 0 10px;
+  padding: 2px 12px;
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+
+.markdown a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.markdown a:hover {
+  text-decoration: underline;
+}
+
+.markdown hr {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.markdown img {
+  max-width: 100%;
+  border-radius: var(--radius-s);
+}

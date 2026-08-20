@@ -1,0 +1,58 @@
+.host {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 80vw;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: #fff;
+  font-size: 12.5px;
+  box-shadow: var(--shadow);
+  animation: slide-in 0.18s ease;
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.success .icon {
+  color: #7fd66f;
+}
+.warning .icon {
+  color: #ffd44d;
+}
+.error .icon {
+  color: #ff7b6e;
+}
+
+.message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

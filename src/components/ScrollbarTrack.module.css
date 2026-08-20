@@ -1,0 +1,28 @@
+.track {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  width: 10px;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.track.visible {
+  opacity: 1;
+}
+
+.thumb {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 6px;
+  border-radius: 3px;
+  background: var(--scroll-thumb);
+  cursor: pointer;
+}
+
+.thumb:hover {
+  background: var(--scroll-thumb-hover);
+}

@@ -1,0 +1,91 @@
+.wrapper {
+  display: flex;
+}
+
+.user {
+  justify-content: flex-end;
+}
+
+.ai {
+  justify-content: flex-start;
+}
+
+.userBubble {
+  max-width: 86%;
+  padding: 8px 12px;
+  border-radius: var(--radius-m) var(--radius-s) var(--radius-m) var(--radius-m);
+  background: var(--accent-subtle);
+  font-size: 13.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.aiBody {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.placeholder {
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 15px;
+  margin-top: 3px;
+  background: var(--accent);
+  animation: blink 1s steps(2) infinite;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-height: 26px;
+  margin-top: 2px;
+}
+
+.stoppedTag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--canvas);
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease;
+}
+
+.aiBody:hover .copyBtn,
+.copyBtn:focus-visible {
+  opacity: 1;
+}
+
+.copyBtn:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
