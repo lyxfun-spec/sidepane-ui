@@ -1,8 +1,14 @@
 .inputArea {
-  flex-shrink: 0;
-  padding: 0 14px 14px;
-  /* 悬浮输入框：无边框分区、无背景填充 */
-  background: transparent;
+  /* 完全悬浮：绝对定位覆盖在聊天区之上，消息从其下方滚过 */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  padding: 28px 14px 14px;
+  /* 底部淡出渐变，让消息滑入输入框下方时自然过渡 */
+  background: linear-gradient(to bottom, transparent 0%, var(--surface) 46%);
+  pointer-events: none;
 }
 
 .box {
@@ -11,6 +17,7 @@
   background: var(--surface);
   box-shadow: var(--shadow);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  pointer-events: auto;
 }
 
 .box:focus-within {

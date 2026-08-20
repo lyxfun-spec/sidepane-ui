@@ -26,8 +26,8 @@ function Shell() {
       <div className={styles.main}>
         <ConversationPanel open={panelOpen} onClose={() => setPanelOpen(false)} />
         <ChatArea />
+        <InputArea />
       </div>
-      <InputArea />
     </div>
   );
 }

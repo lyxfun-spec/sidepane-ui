@@ -10,7 +10,7 @@ import { copyText } from '../utils/clipboard';
 import { Icon } from './Icon';
 import styles from './ChatArea.module.css';
 
-const AT_BOTTOM_THRESHOLD = 48;
+const AT_BOTTOM_MARGIN = 24;
 
 export function ChatArea() {
   const { state } = useChat();
@@ -20,6 +20,7 @@ export function ChatArea() {
   const conv = state.conversations.find((c) => c.id === state.activeId) ?? null;
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const isAtBottomRef = useRef(true);
+  const bottomPadRef = useRef(0);
   const [showJump, setShowJump] = useState(false);
 
   const lastMsg = conv ? conv.messages[conv.messages.length - 1] : null;
@@ -29,6 +30,7 @@ export function ChatArea() {
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
+    bottomPadRef.current = parseFloat(getComputedStyle(el).paddingBottom) || 0;
     el.scrollTop = el.scrollHeight;
     isAtBottomRef.current = true;
     setShowJump(false);
@@ -37,15 +39,19 @@ export function ChatArea() {
   // 智能跟随：仅在用户停留在底部时自动滚动（流式输出/新消息）
   useEffect(() => {
     const el = scrollerRef.current;
-    if (!el || !isAtBottomRef.current) return;
+    if (!el) return;
+    bottomPadRef.current = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+    if (!isAtBottomRef.current) return;
     el.scrollTop = el.scrollHeight;
   }, [conv?.messages.length, lastMsg?.status, lastContentLen]);
 
   const onScroll = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
+    // 底部判定需计入 padding-bottom（悬浮输入框占用区域），避免跟随滚动失效
     const atBottom =
-      el.scrollHeight - el.scrollTop - el.clientHeight < AT_BOTTOM_THRESHOLD;
+      el.scrollHeight - el.scrollTop - el.clientHeight <
+      bottomPadRef.current + AT_BOTTOM_MARGIN;
     isAtBottomRef.current = atBottom;
     setShowJump(!atBottom);
   }, []);
