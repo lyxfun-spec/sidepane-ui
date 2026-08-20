@@ -23,6 +23,15 @@ interface ChatAreaProps {
   inputAreaRef: RefObject<HTMLDivElement | null>;
 }
 
+interface InputLayout {
+  /** 输入框本体（box）顶部距聊天区底部的距离 */
+  boxTop: number;
+  /** 渐变区高度（box 上方透明→白色区域） */
+  gradH: number;
+  /** 消息底部留白 */
+  pb: number;
+}
+
 export function ChatArea({ inputAreaRef }: ChatAreaProps) {
   const { state } = useChat();
   const { showMenu } = useContextMenu();
@@ -33,25 +42,38 @@ export function ChatArea({ inputAreaRef }: ChatAreaProps) {
   const isAtBottomRef = useRef(true);
   const bottomPadRef = useRef(0);
   const [showJump, setShowJump] = useState(false);
-  const [inputH, setInputH] = useState(0);
+  const [layout, setLayout] = useState<InputLayout>({ boxTop: 0, gradH: 0, pb: 80 });
 
   const lastMsg = conv ? conv.messages[conv.messages.length - 1] : null;
   const lastContentLen = lastMsg?.content.length ?? 0;
 
-  // 根据悬浮输入框高度设置消息底部留白（消息可完整滚到输入框上方）
-  const applyPadding = (scroller: HTMLDivElement) => {
-    const h = inputAreaRef.current?.offsetHeight ?? 0;
-    const pb = Math.max(80, h - 10);
-    scroller.style.paddingBottom = `${pb}px`;
-    bottomPadRef.current = pb;
+  // 以输入框本体（box）为基准计算布局：
+  // 滚动条轨道止于 box 上方 6px、"回到底部"按钮 12px、消息留白 = box + 渐变 + 6px
+  const computeLayout = (): InputLayout | null => {
+    const input = inputAreaRef.current; // .box 元素
+    const parent = input?.parentElement; // .inputArea 元素
+    if (!input || !parent) return null;
+    const boxTop = parent.offsetHeight - input.offsetTop;
+    const gradH = parent.offsetHeight - input.offsetTop - input.offsetHeight;
+    const pb = Math.max(60, boxTop + gradH + 6);
+    return { boxTop, gradH, pb };
   };
 
-  // 实时测量悬浮输入框高度（textarea 增高时联动）
+  const applyPadding = (scroller: HTMLDivElement) => {
+    const l = computeLayout();
+    if (!l) return;
+    scroller.style.paddingBottom = `${l.pb}px`;
+    bottomPadRef.current = l.pb;
+  };
+
+  // 实时测量输入框（textarea 增高时联动）
   useEffect(() => {
     const input = inputAreaRef.current;
     if (!input) return;
     const update = () => {
-      setInputH(input.offsetHeight);
+      const l = computeLayout();
+      if (!l) return;
+      setLayout(l);
       const scroller = scrollerRef.current;
       if (scroller) applyPadding(scroller);
     };
@@ -155,12 +177,12 @@ export function ChatArea({ inputAreaRef }: ChatAreaProps) {
           ))}
         </div>
       </div>
-      <ScrollbarTrack containerRef={scrollerRef} bottomOffset={inputH + 4} />
+      <ScrollbarTrack containerRef={scrollerRef} bottomOffset={layout.boxTop + 6} />
       {showJump && (
         <button
           type="button"
           className={styles.jump}
-          style={{ bottom: inputH + 12 }}
+          style={{ bottom: layout.boxTop + 12 }}
           onClick={jumpToBottom}
           title="回到底部"
           aria-label="回到底部"

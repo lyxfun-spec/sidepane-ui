@@ -5,9 +5,14 @@
   right: 0;
   bottom: 0;
   z-index: 10;
-  padding: 28px 14px 14px;
-  /* 底部淡出渐变，让消息滑入输入框下方时自然过渡 */
-  background: linear-gradient(to bottom, transparent 0%, var(--surface) 46%);
+  padding: 12px 14px 14px;
+  /* 底部淡出渐变（12px 内完成），让消息滑入输入框下方时自然过渡 */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--surface) 12%,
+    var(--surface) 100%
+  );
   pointer-events: none;
 }
 

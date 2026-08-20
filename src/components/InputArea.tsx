@@ -34,8 +34,9 @@ export const InputArea = forwardRef<HTMLDivElement>(function InputArea(_props, r
   };
 
   return (
-    <div ref={ref} className={styles.inputArea}>
-      <div className={styles.box}>
+    <div className={styles.inputArea}>
+      {/* ref 挂在 box 上：聊天区据此让滚动条/按钮/留白紧贴输入框本体 */}
+      <div ref={ref} className={styles.box}>
         <div className={styles.taWrap}>
           <textarea
             ref={taRef}
