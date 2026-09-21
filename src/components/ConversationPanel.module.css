@@ -58,7 +58,7 @@
   align-items: center;
   gap: 8px;
   height: 34px;
-  padding: 0 8px;
+  padding: 0 36px 0 8px;
   border-radius: var(--radius-s);
   cursor: pointer;
 }
@@ -95,31 +95,54 @@
 }
 
 .more {
-  display: none;
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border: none;
   border-radius: var(--radius-s);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    opacity 0.12s ease,
+    background-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .row:hover .more,
+.row:focus-within .more,
 .more:focus-visible {
-  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%);
 }
 
 .more:hover {
-  color: var(--accent);
+  background: var(--active);
+  color: var(--text-primary);
 }
 
 .more:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+@media (hover: none) {
+  .more {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(-50%);
+  }
 }
 
 @keyframes spin {

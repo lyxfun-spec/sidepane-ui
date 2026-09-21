@@ -35,9 +35,9 @@ const paths: Record<IconName, ReactNode> = {
   ),
   dots: (
     <>
-      <circle cx="7" cy="12" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="17" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="7" cy="12" r="1.25" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="12" r="1.25" fill="currentColor" stroke="none" />
     </>
   ),
   copy: (

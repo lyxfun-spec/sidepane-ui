@@ -98,6 +98,7 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
                     className={styles.more}
                     title="更多"
                     aria-label="更多操作"
+                    aria-haspopup="menu"
                     onClick={(e) => openRowMenu(e, conv)}
                   >
                     <Icon name="dots" size={24} />
