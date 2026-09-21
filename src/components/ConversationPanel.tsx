@@ -5,7 +5,6 @@ import { useChat } from '../store/ChatStore';
 import { useContextMenu } from './ContextMenu';
 import { useModal } from './Modal';
 import { useToast } from './Toast';
-import { Icon } from './Icon';
 import styles from './ConversationPanel.module.css';
 
 interface ConversationPanelProps {
@@ -100,7 +99,18 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
                     aria-label="更多操作"
                     onClick={(e) => openRowMenu(e, conv)}
                   >
-                    <Icon name="dots" size={15} />
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 48 48"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="24" r="3" fill="#000000" />
+                      <circle cx="24" cy="24" r="3" fill="#000000" />
+                      <circle cx="36" cy="24" r="3" fill="#000000" />
+                    </svg>
                   </button>
                 </div>
               );
