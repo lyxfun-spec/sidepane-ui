@@ -43,7 +43,7 @@ export function MessageItem({ message }: { message: ChatMessage }) {
               title="复制内容（原始 Markdown）"
               aria-label="复制内容"
             >
-              <Icon name="copy" size={13} />
+              <Icon name="copy" size={14} />
             </button>
           )}
         </div>

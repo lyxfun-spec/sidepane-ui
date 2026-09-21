@@ -63,19 +63,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
+  margin-left: -8px;
   border: none;
   border-radius: var(--radius-s);
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: color 0.12s ease, background 0.12s ease;
 }
 
 .copyBtn:hover {
-  background: var(--hover);
   color: var(--accent);
+}
+
+.copyBtn:hover svg {
+  stroke-width: 2.35;
+}
+
+.copyBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 @keyframes blink {

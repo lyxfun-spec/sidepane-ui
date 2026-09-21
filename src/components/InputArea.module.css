@@ -64,7 +64,7 @@
   padding: 4px 6px 6px;
 }
 
-/* Yino 风格：无底色纯图标按钮，用颜色表达状态 */
+/* 无外壳微操作：点击热区保持舒适，视觉反馈只发生在图标本身 */
 .sendBtn {
   display: flex;
   align-items: center;
@@ -73,28 +73,39 @@
   height: 30px;
   padding: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-s);
   background: transparent;
   color: var(--accent);
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .sendBtn:hover:not(:disabled) {
-  background: var(--accent-subtle);
+  color: #004b87;
 }
 
-.sendBtn:active:not(:disabled) {
-  transform: scale(0.94);
+.sendBtn:hover:not(:disabled) svg {
+  stroke-width: 2.35;
+}
+
+.sendBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .sendBtn:disabled {
   color: var(--text-tertiary);
-  opacity: 0.45;
+  opacity: 0.58;
   cursor: default;
 }
 
-.stopBtn:hover:not(:disabled) {
-  background: var(--danger-subtle);
+.stopBtn {
   color: var(--danger);
+}
+
+.stopBtn:hover:not(:disabled) {
+  color: #8f1d12;
+}
+
+.stopBtn:focus-visible {
+  outline-color: var(--danger);
 }
