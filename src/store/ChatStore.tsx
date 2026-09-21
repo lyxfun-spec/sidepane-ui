@@ -18,6 +18,8 @@ interface ChatState {
   streamingId: string | null;
   /** 各会话未发送的草稿 */
   drafts: Record<string, string>;
+  /** 尚未发送首条消息的新对话草稿（此时不会创建会话） */
+  newConversationDraft: string;
 }
 
 const initialState: ChatState = {
@@ -25,15 +27,16 @@ const initialState: ChatState = {
   activeId: null,
   streamingId: null,
   drafts: {},
+  newConversationDraft: '',
 };
 
 type Action =
   | { type: 'NEW_CONVERSATION' }
-  | { type: 'START_DRAFT'; id: string; text: string }
   | { type: 'SWITCH'; id: string }
   | { type: 'RENAME'; id: string; title: string }
   | { type: 'DELETE'; id: string }
   | { type: 'SET_DRAFT'; id: string; text: string }
+  | { type: 'SET_NEW_CONVERSATION_DRAFT'; text: string }
   | { type: 'SEND_USER'; id: string; text: string }
   | { type: 'APPEND_TOKEN'; id: string; token: string }
   | { type: 'STREAM_END'; id: string; stopped: boolean };
@@ -45,34 +48,10 @@ function findConv(state: ChatState, id: string): Conversation | undefined {
 function reducer(state: ChatState, action: Action): ChatState {
   switch (action.type) {
     case 'NEW_CONVERSATION': {
-      const conv: Conversation = {
-        id: uid(),
-        title: '新对话',
-        messages: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
       return {
         ...state,
-        conversations: [conv, ...state.conversations],
-        activeId: conv.id,
-      };
-    }
-
-    case 'START_DRAFT': {
-      const now = Date.now();
-      const conv: Conversation = {
-        id: action.id,
-        title: '新对话',
-        messages: [],
-        createdAt: now,
-        updatedAt: now,
-      };
-      return {
-        ...state,
-        conversations: [conv, ...state.conversations],
-        activeId: conv.id,
-        drafts: { ...state.drafts, [conv.id]: action.text },
+        activeId: null,
+        newConversationDraft: '',
       };
     }
 
@@ -104,6 +83,9 @@ function reducer(state: ChatState, action: Action): ChatState {
 
     case 'SET_DRAFT':
       return { ...state, drafts: { ...state.drafts, [action.id]: action.text } };
+
+    case 'SET_NEW_CONVERSATION_DRAFT':
+      return { ...state, newConversationDraft: action.text };
 
     case 'SEND_USER': {
       const now = Date.now();
@@ -156,6 +138,8 @@ function reducer(state: ChatState, action: Action): ChatState {
         activeId,
         streamingId: action.id,
         drafts: { ...state.drafts, [action.id]: '' },
+        newConversationDraft:
+          state.activeId === null ? '' : state.newConversationDraft,
       };
     }
 
@@ -277,9 +261,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // 初次进入或删除全部会话后，首个输入事件需要同时创建会话。
-    // 否则受控 textarea 的 value 仍为空，刚输入的字符会立即被覆盖。
-    dispatch({ type: 'START_DRAFT', id: uid(), text });
+    dispatch({ type: 'SET_NEW_CONVERSATION_DRAFT', text });
   }, []);
 
   const value = useMemo<ChatContextValue>(

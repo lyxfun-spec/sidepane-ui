@@ -11,10 +11,12 @@ export const InputArea = forwardRef<HTMLDivElement>(function InputArea(_props, r
   const { state, send, stop, setDraft } = useChat();
 
   const conv = state.conversations.find((c) => c.id === state.activeId) ?? null;
-  const value = conv ? (state.drafts[conv.id] ?? '') : '';
+  const value = conv
+    ? (state.drafts[conv.id] ?? '')
+    : state.newConversationDraft;
   const isStreaming =
     state.streamingId !== null && state.streamingId === state.activeId;
-  const canSend = value.trim().length > 0 && !isStreaming;
+  const canSend = value.trim().length > 0 && state.streamingId === null;
 
   const taRef = useRef<HTMLTextAreaElement | null>(null);
 
