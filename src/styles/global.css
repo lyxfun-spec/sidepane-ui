@@ -22,6 +22,11 @@ button {
   font-family: inherit;
 }
 
+button,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 ::selection {
   background: rgba(0, 103, 192, 0.18);
 }
@@ -39,4 +44,18 @@ button {
   background: var(--surface);
   border-left: 1px solid var(--border-strong);
   box-shadow: var(--shadow-lg);
+}
+
+/* 尊重系统的“减少动态效果”设置，同时保留最终状态与可用性。 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
 }

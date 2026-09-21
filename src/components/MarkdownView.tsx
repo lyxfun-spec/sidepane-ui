@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -30,6 +30,17 @@ function extractCodeText(children: ReactNode): string {
 
 export function MarkdownView({ content }: { content: string }) {
   const { push } = useToast();
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const copiedTimerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (copiedTimerRef.current !== null) {
+        window.clearTimeout(copiedTimerRef.current);
+      }
+    },
+    []
+  );
 
   return (
     <div className={styles.markdown}>
@@ -57,10 +68,18 @@ export function MarkdownView({ content }: { content: string }) {
                     className={styles.codeCopy}
                     onClick={() => {
                       copyText(raw);
+                      setCopiedCode(raw);
+                      if (copiedTimerRef.current !== null) {
+                        window.clearTimeout(copiedTimerRef.current);
+                      }
+                      copiedTimerRef.current = window.setTimeout(
+                        () => setCopiedCode(null),
+                        1400
+                      );
                       push('代码已复制', 'success');
                     }}
                   >
-                    复制
+                    {copiedCode === raw ? '已复制' : '复制'}
                   </button>
                 </div>
                 <pre>{children}</pre>

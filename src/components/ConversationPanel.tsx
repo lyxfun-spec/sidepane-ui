@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import type { Conversation } from '../types';
 import { useChat } from '../store/ChatStore';
@@ -19,6 +19,8 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
   const { showMenu } = useContextMenu();
   const { confirm, prompt } = useModal();
   const { push } = useToast();
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const removeTimerRef = useRef<number | null>(null);
 
   const sorted = useMemo(
     () => [...state.conversations].sort((a, b) => b.updatedAt - a.updatedAt),
@@ -34,6 +36,15 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
+
+  useEffect(
+    () => () => {
+      if (removeTimerRef.current !== null) {
+        window.clearTimeout(removeTimerRef.current);
+      }
+    },
+    []
+  );
 
   const openRowMenu = (e: React.MouseEvent, conv: Conversation) => {
     e.stopPropagation();
@@ -58,8 +69,13 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
             confirmText: '删除',
             danger: true,
             onConfirm: () => {
-              deleteConversation(conv.id);
-              push('对话已删除', 'success');
+              setRemovingId(conv.id);
+              removeTimerRef.current = window.setTimeout(() => {
+                deleteConversation(conv.id);
+                setRemovingId(null);
+                push('对话已删除', 'success');
+                removeTimerRef.current = null;
+              }, 180);
             },
           }),
       },
@@ -83,7 +99,7 @@ export function ConversationPanel({ open, onClose }: ConversationPanelProps) {
               return (
                 <div
                   key={conv.id}
-                  className={`${styles.row} ${isActive ? styles.active : ''} ${isStreaming ? styles.streaming : ''}`}
+                  className={`${styles.row} ${isActive ? styles.active : ''} ${isStreaming ? styles.streaming : ''} ${removingId === conv.id ? styles.removing : ''}`}
                   onClick={() => {
                     switchConversation(conv.id);
                     onClose();

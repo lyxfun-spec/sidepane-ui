@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { ChatMessage } from '../types';
 import { copyText } from '../utils/clipboard';
 import { useToast } from './Toast';
@@ -8,9 +9,25 @@ import styles from './MessageItem.module.css';
 export function MessageItem({ message }: { message: ChatMessage }) {
   const { push } = useToast();
   const isStreaming = message.status === 'streaming';
+  const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (copiedTimerRef.current !== null) {
+        window.clearTimeout(copiedTimerRef.current);
+      }
+    },
+    []
+  );
 
   const handleCopy = () => {
     copyText(message.content);
+    setCopied(true);
+    if (copiedTimerRef.current !== null) {
+      window.clearTimeout(copiedTimerRef.current);
+    }
+    copiedTimerRef.current = window.setTimeout(() => setCopied(false), 1400);
     push('已复制到剪贴板', 'success');
   };
 
@@ -28,7 +45,14 @@ export function MessageItem({ message }: { message: ChatMessage }) {
         {message.content ? (
           <MarkdownView content={message.content} />
         ) : (
-          <span className={styles.placeholder}>正在思考…</span>
+          <span className={styles.placeholder}>
+            正在思考
+            <span className={styles.thinkingDots} aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+          </span>
         )}
         {isStreaming && <span className={styles.caret} />}
         <div className={styles.footer}>
@@ -43,7 +67,7 @@ export function MessageItem({ message }: { message: ChatMessage }) {
               title="复制内容（原始 Markdown）"
               aria-label="复制内容"
             >
-              <Icon name="copy" size={14} />
+              <Icon name={copied ? 'check' : 'copy'} size={14} />
             </button>
           )}
         </div>

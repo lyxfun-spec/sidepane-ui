@@ -37,20 +37,52 @@ type ModalState =
   | null;
 
 const ModalContext = createContext<ModalContextValue | null>(null);
+const MODAL_EXIT_MS = 170;
 
 export function ModalProvider({ children }: { children: ReactNode }) {
   const [modal, setModal] = useState<ModalState>(null);
+  const [closing, setClosing] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
 
-  const close = useCallback(() => setModal(null), []);
+  const close = useCallback(() => {
+    setClosing(true);
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+    }
+    closeTimerRef.current = window.setTimeout(() => {
+      setModal(null);
+      setClosing(false);
+      closeTimerRef.current = null;
+    }, MODAL_EXIT_MS);
+  }, []);
 
   const confirm = useCallback((opts: ConfirmOptions) => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setClosing(false);
     setModal({ kind: 'confirm', opts });
   }, []);
 
   const prompt = useCallback((opts: PromptOptions) => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setClosing(false);
     setModal({ kind: 'prompt', opts });
   }, []);
+
+  useEffect(
+    () => () => {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (modal?.kind === 'prompt') {
@@ -81,7 +113,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
       {children}
       {modal && (
         <div
-          className={styles.overlay}
+          className={`${styles.overlay} ${closing ? styles.closing : ''}`}
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) close();
           }}

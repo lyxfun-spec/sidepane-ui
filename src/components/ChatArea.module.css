@@ -5,6 +5,17 @@
   overflow: hidden;
 }
 
+.contentLayer {
+  position: absolute;
+  inset: 0;
+  animation: content-in var(--motion-normal) var(--ease-emphasized) both;
+}
+
+.contentLayer.exiting {
+  pointer-events: none;
+  animation: content-out var(--motion-exit) var(--ease-exit) both;
+}
+
 .scroller {
   position: absolute;
   inset: 0;
@@ -39,21 +50,49 @@
   color: var(--text-secondary);
   box-shadow: var(--shadow);
   cursor: pointer;
-  animation: rise 0.15s ease;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-normal) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+.jump.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .jump:hover {
   color: var(--accent);
   border-color: var(--accent);
+  box-shadow: 0 4px 14px rgba(0, 103, 192, 0.14);
 }
 
-@keyframes rise {
+.jump:active {
+  background: var(--hover);
+}
+
+@keyframes content-in {
   from {
-    transform: translateX(-50%) translateY(6px);
     opacity: 0;
+    transform: translateY(4px);
   }
   to {
-    transform: translateX(-50%) translateY(0);
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes content-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-2px);
   }
 }

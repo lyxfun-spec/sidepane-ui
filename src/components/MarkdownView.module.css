@@ -110,12 +110,20 @@
   color: var(--text-secondary);
   font-size: 11px;
   cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
 }
 
 .codeCopy:hover {
   color: var(--accent);
+  background: rgba(0, 103, 192, 0.08);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.codeCopy:active {
+  background: rgba(0, 103, 192, 0.12);
 }
 
 .codeCopy:focus-visible {

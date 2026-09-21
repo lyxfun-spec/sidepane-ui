@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -16,6 +17,7 @@ interface ToastItem {
   id: number;
   type: ToastType;
   message: string;
+  phase: 'visible' | 'exiting';
 }
 
 interface ToastContextValue {
@@ -34,13 +36,27 @@ const TOAST_ICONS: Record<ToastType, IconName> = {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const idRef = useRef(0);
+  const timersRef = useRef<number[]>([]);
+
+  useEffect(
+    () => () => {
+      timersRef.current.forEach((timer) => window.clearTimeout(timer));
+    },
+    []
+  );
 
   const push = useCallback((message: string, type: ToastType = 'info') => {
     const id = ++idRef.current;
-    setToasts((list) => [...list, { id, type, message }]);
-    window.setTimeout(() => {
+    setToasts((list) => [...list, { id, type, message, phase: 'visible' }]);
+    const exitTimer = window.setTimeout(() => {
+      setToasts((list) =>
+        list.map((t) => (t.id === id ? { ...t, phase: 'exiting' } : t))
+      );
+    }, 2320);
+    const removeTimer = window.setTimeout(() => {
       setToasts((list) => list.filter((t) => t.id !== id));
     }, 2600);
+    timersRef.current.push(exitTimer, removeTimer);
   }, []);
 
   const value = useMemo(() => ({ push }), [push]);
@@ -50,7 +66,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className={styles.host}>
         {toasts.map((t) => (
-          <div key={t.id} className={`${styles.toast} ${styles[t.type]}`}>
+          <div
+            key={t.id}
+            className={`${styles.toast} ${styles[t.type]} ${t.phase === 'exiting' ? styles.exiting : ''}`}
+          >
             <span className={styles.icon}>
               <Icon name={TOAST_ICONS[t.type]} size={14} />
             </span>

@@ -46,14 +46,18 @@
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
 }
 
 .btn:hover {
+  background: var(--hover);
   color: var(--accent);
 }
 
-.btn:hover svg {
-  stroke-width: 2.35;
+.btn:active {
+  background: var(--active);
 }
 
 .btn:focus-visible {

@@ -6,6 +6,7 @@ import {
   type RefObject,
 } from 'react';
 import type * as React from 'react';
+import type { Conversation } from '../types';
 import { useChat } from '../store/ChatStore';
 import { useContextMenu } from './ContextMenu';
 import { useToast } from './Toast';
@@ -17,6 +18,8 @@ import { Icon } from './Icon';
 import styles from './ChatArea.module.css';
 
 const AT_BOTTOM_MARGIN = 24;
+const CONTENT_EXIT_MS = 150;
+const NEW_CONVERSATION_KEY = '__new_conversation__';
 
 interface ChatAreaProps {
   /** 悬浮输入框根元素：滚动条轨道、"回到底部"按钮与底部留白均止于输入框上方 */
@@ -37,7 +40,16 @@ export function ChatArea({ inputAreaRef }: ChatAreaProps) {
   const { showMenu } = useContextMenu();
   const { push } = useToast();
 
-  const conv = state.conversations.find((c) => c.id === state.activeId) ?? null;
+  const desiredKey = state.activeId ?? NEW_CONVERSATION_KEY;
+  const [displayKey, setDisplayKey] = useState(desiredKey);
+  const [contentExiting, setContentExiting] = useState(false);
+  const convSnapshotRef = useRef<Conversation | null>(null);
+  const liveDisplayConv =
+    displayKey === NEW_CONVERSATION_KEY
+      ? null
+      : state.conversations.find((c) => c.id === displayKey) ?? null;
+  if (liveDisplayConv) convSnapshotRef.current = liveDisplayConv;
+  const conv = liveDisplayConv ?? convSnapshotRef.current;
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const isAtBottomRef = useRef(true);
   const bottomPadRef = useRef(0);
@@ -46,6 +58,20 @@ export function ChatArea({ inputAreaRef }: ChatAreaProps) {
 
   const lastMsg = conv ? conv.messages[conv.messages.length - 1] : null;
   const lastContentLen = lastMsg?.content.length ?? 0;
+
+  // 新建/切换会话时先让当前内容退场，再挂载目标内容。
+  useEffect(() => {
+    if (desiredKey === displayKey) return;
+    setContentExiting(true);
+    const timer = window.setTimeout(() => {
+      if (desiredKey === NEW_CONVERSATION_KEY) {
+        convSnapshotRef.current = null;
+      }
+      setDisplayKey(desiredKey);
+      setContentExiting(false);
+    }, CONTENT_EXIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [desiredKey, displayKey]);
 
   // 以输入框本体（box）为基准计算布局：
   // 滚动条轨道止于 box 上方 6px、"回到底部"按钮 12px、消息留白 = box + 渐变 + 6px
@@ -91,7 +117,7 @@ export function ChatArea({ inputAreaRef }: ChatAreaProps) {
     el.scrollTop = el.scrollHeight;
     isAtBottomRef.current = true;
     setShowJump(false);
-  }, [state.activeId]);
+  }, [displayKey]);
 
   // 智能跟随：仅在用户停留在底部时自动滚动（流式输出/新消息）
   useEffect(() => {
@@ -155,37 +181,45 @@ export function ChatArea({ inputAreaRef }: ChatAreaProps) {
     [showMenu, push]
   );
 
-  if (!conv || conv.messages.length === 0) {
-    return (
-      <div className={styles.chat} onContextMenu={onContextMenu}>
-        <WelcomeEmpty />
-      </div>
-    );
-  }
+  const isEmpty = !conv || conv.messages.length === 0;
 
   return (
-    <div className={styles.chat}>
+    <div className={styles.chat} onContextMenu={onContextMenu}>
       <div
-        ref={scrollerRef}
-        className={styles.scroller}
-        onScroll={onScroll}
-        onContextMenu={onContextMenu}
+        key={displayKey}
+        className={`${styles.contentLayer} ${contentExiting ? styles.exiting : ''}`}
       >
-        <div className={styles.messages}>
-          {conv.messages.map((m) => (
-            <MessageItem key={m.id} message={m} />
-          ))}
-        </div>
+        {isEmpty ? (
+          <WelcomeEmpty />
+        ) : (
+          <div
+            ref={scrollerRef}
+            className={styles.scroller}
+            onScroll={onScroll}
+          >
+            <div className={styles.messages}>
+              {conv.messages.map((m) => (
+                <MessageItem key={m.id} message={m} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-      <ScrollbarTrack containerRef={scrollerRef} bottomOffset={layout.boxTop + 6} />
-      {showJump && (
+      {!isEmpty && (
+        <ScrollbarTrack
+          containerRef={scrollerRef}
+          bottomOffset={layout.boxTop + 6}
+        />
+      )}
+      {!isEmpty && (
         <button
           type="button"
-          className={styles.jump}
+          className={`${styles.jump} ${showJump ? styles.visible : ''}`}
           style={{ bottom: layout.boxTop + 12 }}
           onClick={jumpToBottom}
           title="回到底部"
           aria-label="回到底部"
+          tabIndex={showJump ? 0 : -1}
         >
           <Icon name="arrowDown" size={15} />
         </button>

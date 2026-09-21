@@ -31,6 +31,15 @@
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.2);
 
+  /* 动效：小反馈要快，容器切换稍慢，统一使用自然减速曲线 */
+  --motion-fast: 120ms;
+  --motion-normal: 180ms;
+  --motion-slow: 220ms;
+  --motion-exit: 150ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
   /* 圆角 */
   --radius-s: 4px;
   --radius-m: 8px;

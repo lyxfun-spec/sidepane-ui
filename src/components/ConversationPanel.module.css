@@ -5,7 +5,7 @@
   background: rgba(0, 0, 0, 0.28);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: opacity var(--motion-normal) var(--ease-standard);
 }
 
 .overlay.open {
@@ -27,7 +27,7 @@
   /* 阴影仅向右扩散，避免盖住顶栏与输入框 */
   box-shadow: 6px 0 20px rgba(0, 0, 0, 0.12);
   transform: translateX(-102%);
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+  transition: transform var(--motion-slow) var(--ease-emphasized);
 }
 
 .panel.open {
@@ -50,6 +50,7 @@
   text-align: center;
   font-size: 13px;
   color: var(--text-tertiary);
+  animation: empty-in var(--motion-normal) var(--ease-standard) both;
 }
 
 .row {
@@ -61,14 +62,33 @@
   padding: 0 36px 0 8px;
   border-radius: var(--radius-s);
   cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-normal) var(--ease-exit),
+    height var(--motion-normal) var(--ease-exit),
+    margin var(--motion-normal) var(--ease-exit),
+    padding var(--motion-normal) var(--ease-exit);
 }
 
 .row:hover {
   background: var(--hover);
 }
 
+.row:active {
+  background: var(--active);
+}
+
 .row.active {
   background: var(--accent-subtle);
+}
+
+.row.removing {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .row.streaming .title {
@@ -132,6 +152,10 @@
   color: var(--text-primary);
 }
 
+.more:active {
+  background: var(--active);
+}
+
 .more:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
@@ -148,5 +172,11 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes empty-in {
+  from {
+    opacity: 0;
   }
 }

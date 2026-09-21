@@ -30,16 +30,44 @@ interface ContextMenuContextValue {
 const ContextMenuContext = createContext<ContextMenuContextValue | null>(null);
 
 const MENU_PADDING = 8;
+const MENU_EXIT_MS = 130;
 
 export function ContextMenuProvider({ children }: { children: ReactNode }) {
   const [menu, setMenu] = useState<MenuState | null>(null);
+  const [closing, setClosing] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
 
-  const close = useCallback(() => setMenu(null), []);
+  const close = useCallback(() => {
+    if (!menu) return;
+    setClosing(true);
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+    }
+    closeTimerRef.current = window.setTimeout(() => {
+      setMenu(null);
+      setClosing(false);
+      closeTimerRef.current = null;
+    }, MENU_EXIT_MS);
+  }, [menu]);
 
   const showMenu = useCallback((x: number, y: number, items: MenuItem[]) => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setClosing(false);
     setMenu({ x, y, items });
   }, []);
+
+  useEffect(
+    () => () => {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current);
+      }
+    },
+    []
+  );
 
   // 边界修正：菜单不超出视口
   useLayoutEffect(() => {
@@ -77,8 +105,12 @@ export function ContextMenuProvider({ children }: { children: ReactNode }) {
           <div className={styles.backdrop} onMouseDown={close} />
           <div
             ref={menuRef}
-            className={styles.menu}
-            style={{ left: menu.x, top: menu.y }}
+            className={`${styles.menu} ${closing ? styles.closing : ''}`}
+            style={{
+              left: menu.x,
+              top: menu.y,
+              transformOrigin: `${menu.x > window.innerWidth / 2 ? 'right' : 'left'} ${menu.y > window.innerHeight / 2 ? 'bottom' : 'top'}`,
+            }}
             role="menu"
           >
             {menu.items.map((item, idx) => (

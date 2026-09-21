@@ -22,7 +22,11 @@
   color: #fff;
   font-size: 12.5px;
   box-shadow: var(--shadow);
-  animation: slide-in 0.18s ease;
+  animation: slide-in var(--motion-slow) var(--ease-emphasized) both;
+}
+
+.toast.exiting {
+  animation: slide-out var(--motion-slow) var(--ease-exit) both;
 }
 
 .icon {
@@ -48,11 +52,22 @@
 
 @keyframes slide-in {
   from {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
     opacity: 0;
   }
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes slide-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-4px);
+    opacity: 0;
   }
 }

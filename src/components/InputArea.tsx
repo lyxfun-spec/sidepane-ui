@@ -19,13 +19,33 @@ export const InputArea = forwardRef<HTMLDivElement>(function InputArea(_props, r
   const canSend = value.trim().length > 0 && state.streamingId === null;
 
   const taRef = useRef<HTMLTextAreaElement | null>(null);
+  const resizeFrameRef = useRef<number | null>(null);
 
   // 自动增高
   useEffect(() => {
     const el = taRef.current;
     if (!el) return;
+    if (resizeFrameRef.current !== null) {
+      cancelAnimationFrame(resizeFrameRef.current);
+    }
+    const previous = el.getBoundingClientRect().height;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)}px`;
+    const next = Math.min(el.scrollHeight, MAX_INPUT_HEIGHT);
+    if (Math.abs(previous - next) < 1) {
+      el.style.height = `${next}px`;
+      return;
+    }
+    el.style.height = `${previous}px`;
+    resizeFrameRef.current = requestAnimationFrame(() => {
+      el.style.height = `${next}px`;
+      resizeFrameRef.current = null;
+    });
+    return () => {
+      if (resizeFrameRef.current !== null) {
+        cancelAnimationFrame(resizeFrameRef.current);
+        resizeFrameRef.current = null;
+      }
+    };
   }, [value]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

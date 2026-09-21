@@ -6,7 +6,16 @@
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.32);
-  animation: fade-in 0.15s ease;
+  animation: fade-in var(--motion-normal) var(--ease-standard) both;
+}
+
+.overlay.closing {
+  pointer-events: none;
+  animation: fade-out var(--motion-exit) var(--ease-exit) both;
+}
+
+.overlay.closing .card {
+  animation: pop-out var(--motion-exit) var(--ease-exit) both;
 }
 
 .card {
@@ -16,7 +25,7 @@
   border-radius: var(--radius-l);
   background: var(--surface);
   box-shadow: var(--shadow-lg);
-  animation: pop-in 0.15s ease;
+  animation: pop-in var(--motion-slow) var(--ease-emphasized) both;
 }
 
 .title {
@@ -44,10 +53,14 @@
   color: var(--text-primary);
   outline: none;
   background: var(--surface);
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
 }
 
 .input:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(0, 103, 192, 0.16);
 }
 
 .buttons {
@@ -64,10 +77,19 @@
   color: var(--text-primary);
   font-size: 13px;
   cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
 }
 
 .btn:hover {
   background: var(--hover);
+}
+
+.btn:active {
+  background: var(--active);
 }
 
 .primary {
@@ -78,6 +100,7 @@
 
 .primary:hover {
   background: var(--accent-hover);
+  box-shadow: 0 3px 9px rgba(0, 103, 192, 0.2);
 }
 
 .danger {
@@ -88,16 +111,28 @@
 
 .danger:hover {
   background: #a82214;
+  box-shadow: 0 3px 9px rgba(196, 43, 28, 0.2);
 }
 
 @keyframes pop-in {
   from {
-    transform: scale(0.96);
+    transform: translateY(4px);
     opacity: 0;
   }
   to {
-    transform: scale(1);
+    transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes pop-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(3px);
+    opacity: 0;
   }
 }
 
@@ -107,5 +142,14 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }

@@ -1,13 +1,18 @@
 .wrapper {
   display: flex;
+  animation-duration: var(--motion-slow);
+  animation-timing-function: var(--ease-emphasized);
+  animation-fill-mode: both;
 }
 
 .user {
   justify-content: flex-end;
+  animation-name: message-in;
 }
 
 .ai {
   justify-content: flex-start;
+  animation-name: message-in;
 }
 
 .userBubble {
@@ -29,8 +34,33 @@
 }
 
 .placeholder {
+  display: inline-flex;
+  align-items: baseline;
   color: var(--text-tertiary);
   font-size: 13px;
+  animation: placeholder-in var(--motion-normal) var(--ease-standard) both;
+}
+
+.thinkingDots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 5px;
+}
+
+.thinkingDots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: thinking 1s ease-in-out infinite;
+}
+
+.thinkingDots i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.thinkingDots i:nth-child(3) {
+  animation-delay: 240ms;
 }
 
 .caret {
@@ -57,6 +87,7 @@
   background: var(--canvas);
   color: var(--text-tertiary);
   font-size: 11px;
+  animation: footer-item-in var(--motion-normal) var(--ease-emphasized) both;
 }
 
 .copyBtn {
@@ -71,14 +102,15 @@
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
+  animation: footer-item-in var(--motion-normal) var(--ease-emphasized) both;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
 }
 
 .copyBtn:hover {
   color: var(--accent);
-}
-
-.copyBtn:hover svg {
-  stroke-width: 2.35;
+  background: var(--hover);
 }
 
 .copyBtn:focus-visible {
@@ -86,8 +118,42 @@
   outline-offset: 1px;
 }
 
+.copyBtn:active {
+  background: var(--active);
+}
+
 @keyframes blink {
   50% {
+    opacity: 0;
+  }
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
+@keyframes placeholder-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes thinking {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@keyframes footer-item-in {
+  from {
     opacity: 0;
   }
 }

@@ -21,7 +21,9 @@
   border-radius: var(--radius-l);
   background: var(--surface);
   box-shadow: var(--shadow);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color var(--motion-normal) var(--ease-standard),
+    box-shadow var(--motion-normal) var(--ease-standard);
   pointer-events: auto;
 }
 
@@ -51,6 +53,7 @@
   line-height: 1.5;
   color: var(--text-primary);
   scrollbar-width: none;
+  transition: height var(--motion-normal) var(--ease-standard);
 }
 
 .taWrap textarea::-webkit-scrollbar {
@@ -77,14 +80,19 @@
   background: transparent;
   color: var(--accent);
   cursor: pointer;
+  animation: control-in var(--motion-normal) var(--ease-emphasized) both;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
 }
 
 .sendBtn:hover:not(:disabled) {
   color: #004b87;
 }
 
-.sendBtn:hover:not(:disabled) svg {
-  stroke-width: 2.35;
+.sendBtn:active:not(:disabled) {
+  background: var(--hover);
 }
 
 .sendBtn:focus-visible {
@@ -108,4 +116,10 @@
 
 .stopBtn:focus-visible {
   outline-color: var(--danger);
+}
+
+@keyframes control-in {
+  from {
+    opacity: 0;
+  }
 }
