@@ -46,6 +46,17 @@ button,
   box-shadow: var(--shadow-lg);
 }
 
+/* 桌面侧边栏由原生窗口控制宽度，React 内容始终铺满整个窗口。 */
+html[data-desktop='true'] body {
+  background: var(--surface);
+}
+
+html[data-desktop='true'] .app-shell {
+  width: 100vw;
+  border-left-color: var(--border-strong);
+  box-shadow: none;
+}
+
 /* 尊重系统的“减少动态效果”设置，同时保留最终状态与可用性。 */
 @media (prefers-reduced-motion: reduce) {
   *,

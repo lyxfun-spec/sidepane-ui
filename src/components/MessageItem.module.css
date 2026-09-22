@@ -103,14 +103,11 @@
   color: var(--text-tertiary);
   cursor: pointer;
   animation: footer-item-in var(--motion-normal) var(--ease-emphasized) both;
-  transition:
-    color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard);
+  transition: color var(--motion-fast) var(--ease-standard);
 }
 
 .copyBtn:hover {
   color: var(--accent);
-  background: var(--hover);
 }
 
 .copyBtn:focus-visible {
@@ -119,7 +116,7 @@
 }
 
 .copyBtn:active {
-  background: var(--active);
+  color: var(--text-primary);
 }
 
 @keyframes blink {

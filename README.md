@@ -2,12 +2,13 @@
 
 侧边窗格形态的 AI 助手前端界面（参考微软 Copilot 侧边面板交互形态）。
 
-> **本项目仅包含前端 UI 与交互逻辑（纯 React，无任何后端/服务进程/协议层）。**
+> **本项目包含 React UI 与 Electron 桌面外壳，不包含 Agent 后端、服务进程或协议层。**
 > 对话回复当前为"回显用户输入 + 逐字流式输出"的纯浏览器内模拟；后续对接外部后台服务时，替换 `src/mock/echoStream.ts` 即可。
 
 ## 技术栈
 
 - Vite 5 + React 18 + TypeScript（strict）
+- Electron 桌面外壳（Windows 优先，保留 macOS 适配结构）
 - react-markdown + remark-gfm + rehype-highlight（Markdown 渲染与代码高亮）
 - 手写 CSS：设计令牌（`src/styles/tokens.css`）+ CSS Modules
 - 状态管理：React Context + useReducer（`src/store/ChatStore.tsx`），纯内存态，不持久化
@@ -16,9 +17,17 @@
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:5173
-pnpm build      # tsc --noEmit && vite build
+pnpm dev        # 启动 Vite（5174）与 Electron 侧边栏窗口
+pnpm dev:web    # 仅在浏览器中预览 UI
+pnpm build      # 类型检查并构建前端
 ```
+
+桌面版默认停靠在当前显示器右侧，不占用 Windows 任务栏；显示和隐藏时会从
+屏幕右缘滑入或滑出。可通过系统托盘控制侧边栏，全局快捷键为
+`Ctrl/Cmd + Shift + Space`。窗口关闭按钮会将侧边栏滑出并隐藏，托盘菜单中的
+“退出”才会结束应用。侧边栏位置固定不可拖动，只能通过左边缘调整宽度。顶栏
+关闭按钮用于收起侧边栏。侧边栏展开时固定置于其他普通窗口上方，不提供关闭
+置顶的选项。
 
 ## 功能清单
 
@@ -44,6 +53,9 @@ src/
                             WelcomeEmpty / Toast / Modal / ContextMenu /
                             ScrollbarTrack / Icon）
   styles/                   tokens.css（Fluent 浅色设计令牌）+ global.css
+electron/
+  main.cjs                  窗口、托盘、快捷键与状态记忆
+  preload.cjs               安全的桌面能力桥接
 ```
 
 ## 设计参考

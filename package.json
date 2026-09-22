@@ -3,11 +3,14 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "侧边窗格 AI 助手前端 UI（纯前端，无后端）",
+  "main": "electron/main.cjs",
+  "description": "基于 Electron 与 React 的桌面侧边栏 AI 助手客户端",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k \"vite --host 127.0.0.1 --port 5174\" \"wait-on http://127.0.0.1:5174 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5174 electron .\"",
+    "dev:web": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "desktop": "electron ."
   },
   "dependencies": {
     "highlight.js": "^11.10.0",
@@ -21,7 +24,11 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.0.0",
+    "electron": "^38.1.2",
     "typescript": "~5.6.3",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "wait-on": "^8.0.4"
   }
 }

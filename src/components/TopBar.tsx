@@ -8,6 +8,8 @@ interface TopBarProps {
 }
 
 export function TopBar({ panelOpen, onTogglePanel, onNewConversation }: TopBarProps) {
+  const desktop = window.sidepaneDesktop;
+
   return (
     <header className={styles.topbar}>
       <div className={styles.left}>
@@ -33,6 +35,17 @@ export function TopBar({ panelOpen, onTogglePanel, onNewConversation }: TopBarPr
         >
           <Icon name="plus" size={17} />
         </button>
+        {desktop ? (
+          <button
+            type="button"
+            className={styles.btn}
+            onClick={() => void desktop.hideWindow()}
+            title="收起侧边栏"
+            aria-label="收起侧边栏"
+          >
+            <Icon name="close" size={16} />
+          </button>
+        ) : null}
       </div>
     </header>
   );

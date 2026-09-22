@@ -9,7 +9,6 @@ export type IconName =
   | 'stop'
   | 'trash'
   | 'pencil'
-  | 'pin'
   | 'check'
   | 'close'
   | 'arrowDown'
@@ -58,12 +57,6 @@ const paths: Record<IconName, ReactNode> = {
   pencil: (
     <>
       <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-    </>
-  ),
-  pin: (
-    <>
-      <line x1="12" y1="17" x2="12" y2="22" />
-      <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />
     </>
   ),
   check: <polyline points="20 6 9 17 4 12" />,

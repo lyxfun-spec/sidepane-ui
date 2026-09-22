@@ -80,7 +80,7 @@ export const InputArea = forwardRef<HTMLDivElement>(function InputArea(_props, r
               title="停止生成"
               aria-label="停止生成"
             >
-              <Icon name="stop" size={14} />
+              <Icon name="stop" size={18} />
             </button>
           ) : (
             <button
