@@ -1,0 +1,42 @@
+name: Bug 报告
+description: 报告可复现的问题
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 感谢反馈。请尽量提供完整、可复现的信息。
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 实际发生了什么？你原本期望什么？
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 启动应用
+        2. 点击……
+        3. 观察到……
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Node.js 与 pnpm 版本
+      placeholder: Node.js 22.x，pnpm 11.x
+  - type: textarea
+    id: context
+    attributes:
+      label: 补充信息
+      description: 可附截图、日志、显示器数量和缩放比例等信息。

@@ -1,63 +1,90 @@
 # SidePane UI
 
-侧边窗格形态的 AI 助手前端界面（参考微软 Copilot 侧边面板交互形态）。
+一个用于桌面 AI 助手的侧边栏界面起点，使用 React、TypeScript 和 Electron 构建。
 
-> **本项目包含 React UI 与 Electron 桌面外壳，不包含 Agent 后端、服务进程或协议层。**
-> 对话回复当前为"回显用户输入 + 逐字流式输出"的纯浏览器内模拟；后续对接外部后台服务时，替换 `src/mock/echoStream.ts` 即可。
+> [!IMPORTANT]
+> SidePane UI 当前是 **v0.1 Preview**。本仓库只包含 UI 与 Electron 桌面外壳，不包含 Agent 后端、模型调用、服务进程或协议层。对话回复目前由浏览器内的回显流模拟。
 
-## 技术栈
+<p align="center">
+  <img src="docs/images/sidepane-ui.png" alt="SidePane UI 空白会话界面" width="360" />
+</p>
 
-- Vite 5 + React 18 + TypeScript（strict）
-- Electron 桌面外壳（Windows 优先，保留 macOS 适配结构）
-- react-markdown + remark-gfm + rehype-highlight（Markdown 渲染与代码高亮）
-- 手写 CSS：设计令牌（`src/styles/tokens.css`）+ CSS Modules
-- 状态管理：React Context + useReducer（`src/store/ChatStore.tsx`），纯内存态，不持久化
+## 为什么做这个项目
 
-## 运行
+不少 AI 客户端都从“聊天页面”开始，但桌面侧边栏还需要处理窗口停靠、随时唤起、流式输出、智能滚动、会话切换和输入区布局等细节。SidePane UI 把这些交互整理成一个边界清晰、容易继续接入后端的开源实现。
+
+## 已实现
+
+- **桌面侧边栏**：停靠当前显示器右侧、滑入滑出、系统托盘、全局快捷键、宽度调节与窗口状态记忆
+- **会话管理**：滑出式列表、自动命名、重命名、删除确认、草稿保留和生成状态提示
+- **聊天体验**：Markdown 与 GFM、代码高亮、流式输出、中止生成、智能滚动跟随和“回到底部”
+- **输入与操作**：自动增高、Enter 发送、Shift+Enter 换行、中文输入法兼容、消息复制与代码块复制
+- **界面反馈**：空状态、Toast、模态框、选中文本右键菜单和自定义滚动条
+
+## 快速开始
+
+建议使用 Node.js 22 与 pnpm 11。
 
 ```bash
 pnpm install
-pnpm dev        # 启动 Vite（5174）与 Electron 侧边栏窗口
-pnpm dev:web    # 仅在浏览器中预览 UI
+pnpm dev
+```
+
+常用命令：
+
+```bash
+pnpm dev:web    # 只在浏览器中预览 UI
 pnpm build      # 类型检查并构建前端
+pnpm preview    # 预览生产构建
 ```
 
-桌面版默认停靠在当前显示器右侧，不占用 Windows 任务栏；显示和隐藏时会从
-屏幕右缘滑入或滑出。可通过系统托盘控制侧边栏，全局快捷键为
-`Ctrl/Cmd + Shift + Space`。窗口关闭按钮会将侧边栏滑出并隐藏，托盘菜单中的
-“退出”才会结束应用。侧边栏位置固定不可拖动，只能通过左边缘调整宽度。顶栏
-关闭按钮用于收起侧边栏。侧边栏展开时固定置于其他普通窗口上方，不提供关闭
-置顶的选项。
+Electron 桌面版默认停靠在当前显示器右侧，并保持在普通窗口上方。使用 `Ctrl/Cmd + Shift + Space` 显示或隐藏侧边栏，也可以通过系统托盘操作。关闭按钮只会收起窗口；托盘菜单中的“退出”才会结束应用。
 
-## 功能清单
+## 接入真实后端
 
-- **顶栏**：品牌标识、会话列表开关、新建对话
-- **会话列表**（滑出式面板）：按更新时间排序、流式生成中 spinner、行内 `⋯` 菜单（重命名 / 删除确认）、空态
-- **聊天区**：用户气泡 + AI 消息流；智能滚动跟随（仅在底部时自动滚动，上翻暂停跟随并浮现"回到底部"按钮）；自定义细滚动条（聊天区与输入区统一）；选中文字右键菜单（复制 / 全选）
-- **消息操作**：AI 消息生成完成后在消息左下角**常驻**复制按钮（复制原始 Markdown，代码块另带"复制"按钮）
-- **流式输出**：逐字回显 + 思考延迟 + 闪烁光标；生成中发送按钮切换为"停止"
-- **输入区**：悬浮输入框（无边框分区、带阴影）、自动增高 textarea、Enter 发送 / Shift+Enter 换行（兼容中文输入法组词）、会话级草稿保留、Yino 风格简洁发送/停止按钮（无底色纯图标）
-- **其他**：空态欢迎界面（示例问题一键提问）、Toast 轻提示、确认 / 重命名弹窗、AI 自动命名会话（首句截断）
+模拟回复集中在 [`src/mock/echoStream.ts`](src/mock/echoStream.ts)。接入 HTTP、WebSocket、IPC 或本地 Agent 服务时，可以从替换这一层开始，保留现有的消息状态和流式渲染逻辑。
 
-## 目录结构
+当前数据全部保存在内存中，应用重启后会话会清空。持久化、身份验证、模型配置与错误恢复均由后续集成方决定。
 
-```
+## 项目结构
+
+```text
 src/
-  main.tsx / App.tsx        入口与外壳
-  types.ts                  领域类型（会话/消息）
-  store/ChatStore.tsx       状态层：reducer + provider + 流式编排（AbortController）
-  mock/echoStream.ts        流式回显模拟（唯一需要替换的"假数据"点）
-  utils/                    工具（文本截断 / 剪贴板）
-  components/               组件（TopBar / ConversationPanel / ChatArea /
-                            MessageItem / MarkdownView / InputArea /
-                            WelcomeEmpty / Toast / Modal / ContextMenu /
-                            ScrollbarTrack / Icon）
-  styles/                   tokens.css（Fluent 浅色设计令牌）+ global.css
+  main.tsx / App.tsx        React 入口与界面外壳
+  types.ts                  会话与消息类型
+  store/ChatStore.tsx       reducer、Context 与流式编排
+  mock/echoStream.ts        浏览器内的模拟流式回复
+  utils/                    文本与剪贴板工具
+  components/               聊天、会话列表、输入框等组件
+  styles/                   全局样式与设计令牌
 electron/
   main.cjs                  窗口、托盘、快捷键与状态记忆
-  preload.cjs               安全的桌面能力桥接
+  preload.cjs               桌面能力桥接
 ```
 
-## 设计参考
+## 当前限制
 
-交互细节借鉴了此前项目 Yino 的可取之处：智能滚动跟随、生成完成才显示操作按钮、选中文字右键菜单、自定义滚动条、空态引导、Toast 提示、简洁的发送/停止按钮等；本项目中均以 React 组件化方式重新实现。
+- Windows 是目前主要验证平台；macOS 仅保留基础适配结构。
+- 还没有持久化、真实模型连接或安装包构建流程。
+- 还没有自动化测试套件；持续集成会执行 TypeScript 检查和生产构建。
+- 生产构建中的主 JavaScript 包仍有进一步拆分空间。
+
+## 路线图
+
+- 定义可替换的 Agent/流式传输适配器
+- 增加本地会话持久化
+- 补充组件和状态层测试
+- 完善 macOS 行为验证
+- 增加可安装的桌面发布包
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request。开始前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+## 设计与商标说明
+
+本项目的侧边面板交互受到包括 Microsoft Copilot 在内的桌面助手产品启发，部分交互思路也来自 Yino。SidePane UI 是独立的开源项目，与 Microsoft 没有隶属、赞助或背书关系；文中出现的产品名和商标归各自权利人所有。
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE)。
