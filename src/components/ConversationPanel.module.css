@@ -17,16 +17,17 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
+  right: 0;
   z-index: 101;
   display: flex;
   flex-direction: column;
   width: 288px;
   background: var(--surface);
-  border-right: 1px solid var(--border);
-  /* 阴影仅向右扩散，避免盖住顶栏与输入框 */
-  box-shadow: 6px 0 20px rgba(0, 0, 0, 0.12);
-  transform: translateX(-102%);
+  border-left: 1px solid var(--border);
+  /* 阴影向左扩散，与面板从右侧滑出的方向一致 */
+  box-shadow: -6px 0 20px rgba(0, 0, 0, 0.12);
+  /* 额外移出阴影的扩散范围，避免收起后仍覆盖消息区 */
+  transform: translateX(calc(100% + 32px));
   transition: transform var(--motion-slow) var(--ease-emphasized);
 }
 
