@@ -16,6 +16,7 @@ const DEFAULT_WIDTH = 440;
 const MIN_WIDTH = 360;
 const MAX_WIDTH = 720;
 const SLIDE_DURATION = 220;
+const SLIDE_FRAME_INTERVAL = 1000 / 60;
 const WINDOWS_SHELL_DISMISS_DELAY = 160;
 const TOGGLE_SHORTCUT = 'CommandOrControl+Shift+Space';
 const TRAY_ICON_BASE64 =
@@ -29,7 +30,9 @@ let customResizing = false;
 let saveTimer = null;
 let animationId = 0;
 let animationDirection = null;
-let shapedWindowSize = null;
+let rendererRecoveryTimer = null;
+let contentAnimationTimer = null;
+let desiredWindowVisible = false;
 let windowState = {
   width: DEFAULT_WIDTH,
   displayId: null,
@@ -102,22 +105,36 @@ function sidebarBounds(display, hidden = false) {
 function setMainWindowBounds(bounds) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   mainWindow.setBounds(bounds, false);
+}
 
-  if (
-    process.platform === 'win32' &&
-    (shapedWindowSize?.width !== bounds.width ||
-      shapedWindowSize?.height !== bounds.height)
-  ) {
-    mainWindow.setShape([
-      {
-        x: 0,
-        y: 0,
-        width: bounds.width,
-        height: bounds.height,
-      },
-    ]);
-    shapedWindowSize = { width: bounds.width, height: bounds.height };
-  }
+function setMainWindowPosition(x, y) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.setPosition(Math.round(x), Math.round(y), false);
+}
+
+function easeInOutSine(progress) {
+  return (1 - Math.cos(Math.PI * progress)) / 2;
+}
+
+function repaintMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  // Windows 偶尔不会在隐藏窗口重新显示后提交新的合成帧。
+  // invalidate 会请求一次完整重绘，同时不会重载页面或丢失界面状态。
+  const contents = mainWindow.webContents;
+  if (!contents.isDestroyed()) contents.invalidate();
+}
+
+function recoverRenderer(details) {
+  if (quitting || details.reason === 'clean-exit') return;
+  console.error('渲染进程异常退出，正在恢复：', details);
+
+  if (rendererRecoveryTimer) clearTimeout(rendererRecoveryTimer);
+  rendererRecoveryTimer = setTimeout(() => {
+    rendererRecoveryTimer = null;
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const contents = mainWindow.webContents;
+    if (!contents.isDestroyed()) contents.reload();
+  }, 100);
 }
 
 function dockToDisplay(display) {
@@ -192,35 +209,45 @@ function animateSidebar(
     startX = hiddenBounds.x;
     setMainWindowBounds(hiddenBounds);
     mainWindow.showInactive();
+    repaintMainWindow();
   }
 
   if (showing && focus) mainWindow.focus();
 
   const endX = showing ? visibleBounds.x : hiddenBounds.x;
+  const fullDistance = Math.abs(hiddenBounds.x - visibleBounds.x);
+  const remainingDistance = Math.abs(endX - startX);
+  const duration =
+    fullDistance === 0
+      ? 0
+      : SLIDE_DURATION * Math.min(remainingDistance / fullDistance, 1);
   let startedAt = 0;
+  let nextFrameAt = 0;
 
   const step = () => {
     if (id !== animationId || !mainWindow || mainWindow.isDestroyed()) return;
-    const progress = Math.min((performance.now() - startedAt) / SLIDE_DURATION, 1);
-    const eased = showing
-      ? 1 - Math.pow(1 - progress, 3)
-      : Math.pow(progress, 3);
+    const now = performance.now();
+    const progress = duration === 0 ? 1 : Math.min((now - startedAt) / duration, 1);
+    const eased = easeInOutSine(progress);
     const x = Math.round(startX + (endX - startX) * eased);
 
-    setMainWindowBounds({
-      ...visibleBounds,
-      x,
-    });
+    // 滑动期间只更新坐标，避免每帧重复触发窗口尺寸和形状计算。
+    setMainWindowPosition(x, visibleBounds.y);
 
     if (progress < 1) {
-      setTimeout(step, 16);
+      nextFrameAt += SLIDE_FRAME_INTERVAL;
+      setTimeout(step, Math.max(0, nextFrameAt - performance.now()));
       return;
     }
 
+    // 最后一帧对齐完整边界，消除系统缩放下可能出现的像素误差。
+    setMainWindowBounds(showing ? visibleBounds : hiddenBounds);
     animationDirection = null;
     docking = false;
     if (!showing) {
       mainWindow.hide();
+    } else {
+      repaintMainWindow();
     }
     scheduleSave();
     rebuildTrayMenu();
@@ -230,6 +257,7 @@ function animateSidebar(
     if (id !== animationId || !mainWindow || mainWindow.isDestroyed()) return;
     if (restoreAlwaysOnTop) mainWindow.setAlwaysOnTop(true, 'floating');
     startedAt = performance.now();
+    nextFrameAt = startedAt;
     step();
   };
 
@@ -240,6 +268,62 @@ function animateSidebar(
   }
 }
 
+function animateWindowContent(
+  showing,
+  display,
+  { focus = true, restoreAlwaysOnTop = false } = {}
+) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+
+  const id = ++animationId;
+  const bounds = sidebarBounds(display);
+  const wasVisible = mainWindow.isVisible();
+  desiredWindowVisible = showing;
+  animationDirection = showing ? 'showing' : 'hiding';
+  windowState.width = bounds.width;
+  windowState.displayId = display.id;
+  if (contentAnimationTimer) {
+    clearTimeout(contentAnimationTimer);
+    contentAnimationTimer = null;
+  }
+
+  const finish = () => {
+    if (id !== animationId || !mainWindow || mainWindow.isDestroyed()) return;
+    contentAnimationTimer = null;
+    if (!showing) mainWindow.hide();
+    animationDirection = null;
+    scheduleSave();
+    rebuildTrayMenu();
+  };
+
+  const start = () => {
+    if (id !== animationId || !mainWindow || mainWindow.isDestroyed()) return;
+    if (restoreAlwaysOnTop) mainWindow.setAlwaysOnTop(true, 'floating');
+    const contents = mainWindow.webContents;
+    if (contents.isDestroyed()) return;
+    contents.send('sidepane:set-window-visibility', {
+      visible: showing,
+      animateFromHidden: showing && !wasVisible,
+      id,
+    });
+    contentAnimationTimer = setTimeout(finish, SLIDE_DURATION + 50);
+    rebuildTrayMenu();
+  };
+
+  if (showing) {
+    setMainWindowBounds(bounds);
+    if (!wasVisible) mainWindow.showInactive();
+    if (focus) mainWindow.focus();
+    repaintMainWindow();
+  }
+
+  if (restoreAlwaysOnTop) {
+    setTimeout(start, WINDOWS_SHELL_DISMISS_DELAY);
+  } else {
+    start();
+  }
+}
+
 function showWindow({ followCursor = false, focus = true, dismissShell = false } = {}) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const restoreAlwaysOnTop = process.platform === 'win32' && dismissShell;
@@ -247,18 +331,39 @@ function showWindow({ followCursor = false, focus = true, dismissShell = false }
   const display = followCursor
     ? screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
     : displayFromSavedState();
-  animateSidebar(true, display, { focus, restoreAlwaysOnTop });
+  if (process.platform === 'win32') {
+    animateWindowContent(true, display, { focus, restoreAlwaysOnTop });
+  } else {
+    animateSidebar(true, display, { focus, restoreAlwaysOnTop });
+  }
 }
 
 function hideWindow() {
   if (!mainWindow || mainWindow.isDestroyed() || !mainWindow.isVisible()) return;
+  if (process.platform === 'win32') {
+    const display = screen.getDisplayMatching(mainWindow.getBounds());
+    animateWindowContent(false, display, { focus: false });
+    return;
+  }
   const display = screen.getDisplayMatching(mainWindow.getBounds());
   animateSidebar(false, display, { focus: false });
 }
 
+function handleGlobalShortcut() {
+  toggleWindow();
+}
+
 function toggleWindow({ dismissShell = false } = {}) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
-  if (animationDirection === 'showing' || (mainWindow.isVisible() && animationDirection !== 'hiding')) {
+
+  if (customResizing) return;
+
+  const shouldHide =
+    process.platform === 'win32'
+      ? desiredWindowVisible
+      : animationDirection === 'showing' ||
+        (mainWindow.isVisible() && animationDirection !== 'hiding');
+  if (shouldHide) {
     hideWindow();
   } else {
     showWindow({ followCursor: true, dismissShell });
@@ -268,10 +373,12 @@ function toggleWindow({ dismissShell = false } = {}) {
 
 function rebuildTrayMenu() {
   if (!tray || !mainWindow || mainWindow.isDestroyed()) return;
+  const windowVisible =
+    process.platform === 'win32' ? desiredWindowVisible : mainWindow.isVisible();
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
-        label: mainWindow.isVisible() ? '隐藏 SidePane AI' : '显示 SidePane AI',
+        label: windowVisible ? '隐藏 SidePane AI' : '显示 SidePane AI',
         click: toggleWindow,
       },
       {
@@ -314,6 +421,7 @@ function createWindow() {
     maxWidth: MAX_WIDTH,
     frame: false,
     show: false,
+    transparent: process.platform === 'win32',
     alwaysOnTop: true,
     skipTaskbar: process.platform === 'win32',
     movable: false,
@@ -324,7 +432,7 @@ function createWindow() {
     maximizable: false,
     fullscreenable: false,
     autoHideMenuBar: true,
-    backgroundColor: '#ffffff',
+    backgroundColor: process.platform === 'win32' ? '#00000000' : '#ffffff',
     title: 'SidePane AI',
     icon: appIcon(),
     webPreferences: {
@@ -359,6 +467,17 @@ function createWindow() {
     if (/^https?:/i.test(url)) void shell.openExternal(url);
     return { action: 'deny' };
   });
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    recoverRenderer(details);
+  });
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (process.platform !== 'win32' || !mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.webContents.send('sidepane:set-window-visibility', {
+      visible: desiredWindowVisible,
+      animateFromHidden: false,
+      id: animationId,
+    });
+  });
 }
 
 const gotLock = app.requestSingleInstanceLock();
@@ -373,7 +492,7 @@ if (!gotLock) {
     loadWindowState();
     createWindow();
     createTray();
-    globalShortcut.register(TOGGLE_SHORTCUT, toggleWindow);
+    globalShortcut.register(TOGGLE_SHORTCUT, handleGlobalShortcut);
 
     screen.on('display-removed', () => {
       if (mainWindow && !mainWindow.isDestroyed()) dockToDisplay(displayFromSavedState());
@@ -401,6 +520,8 @@ app.on('activate', () => {
 
 app.on('before-quit', () => {
   quitting = true;
+  if (rendererRecoveryTimer) clearTimeout(rendererRecoveryTimer);
+  if (contentAnimationTimer) clearTimeout(contentAnimationTimer);
   saveWindowState();
   globalShortcut.unregisterAll();
 });

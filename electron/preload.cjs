@@ -6,4 +6,9 @@ contextBridge.exposeInMainWorld('sidepaneDesktop', {
   beginResize: () => ipcRenderer.send('sidepane:begin-resize'),
   resizeTo: (screenX) => ipcRenderer.send('sidepane:resize-to', screenX),
   endResize: () => ipcRenderer.send('sidepane:end-resize'),
+  onWindowVisibilityChange: (callback) => {
+    const listener = (_event, state) => callback(state);
+    ipcRenderer.on('sidepane:set-window-visibility', listener);
+    return () => ipcRenderer.removeListener('sidepane:set-window-visibility', listener);
+  },
 });

@@ -7,6 +7,36 @@ import App from './App';
 
 if (window.sidepaneDesktop) {
   document.documentElement.dataset.desktop = 'true';
+
+  if (window.sidepaneDesktop.platform === 'win32') {
+    document.documentElement.dataset.windowVisibility = 'hidden';
+
+    let pendingVisibilityFrame = 0;
+    window.sidepaneDesktop.onWindowVisibilityChange(
+      ({ visible, animateFromHidden }) => {
+        if (pendingVisibilityFrame) cancelAnimationFrame(pendingVisibilityFrame);
+
+        const applyVisibility = () => {
+          document.documentElement.dataset.windowVisibility = visible
+            ? 'visible'
+            : 'hidden';
+        };
+
+        if (visible && animateFromHidden) {
+          document.documentElement.dataset.windowVisibility = 'hidden';
+          pendingVisibilityFrame = requestAnimationFrame(() => {
+            pendingVisibilityFrame = requestAnimationFrame(() => {
+              pendingVisibilityFrame = 0;
+              applyVisibility();
+            });
+          });
+        } else {
+          pendingVisibilityFrame = 0;
+          applyVisibility();
+        }
+      }
+    );
+  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

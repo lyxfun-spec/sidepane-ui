@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { app, BrowserWindow } = require('electron');
 
-const targetUrl = process.env.SIDEPANE_SCREENSHOT_URL ?? 'http://127.0.0.1:5173';
+const targetUrl = process.env.SIDEPANE_SCREENSHOT_URL ?? 'http://127.0.0.1:5274';
 const outputPath = path.resolve(
   process.env.SIDEPANE_SCREENSHOT_PATH ?? 'docs/images/sidepane-ui.png'
 );

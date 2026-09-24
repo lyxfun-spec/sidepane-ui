@@ -57,6 +57,22 @@ html[data-desktop='true'] .app-shell {
   box-shadow: none;
 }
 
+/* Windows 上保持原生窗口固定，只让内容层侧滑，避免高频移动窗口导致白屏。 */
+html[data-desktop='true'][data-window-visibility] body,
+html[data-desktop='true'][data-window-visibility] #root {
+  background: transparent;
+}
+
+html[data-desktop='true'][data-window-visibility] .app-shell {
+  transform: translate3d(0, 0, 0);
+  transition: transform 220ms ease-in-out;
+  will-change: transform;
+}
+
+html[data-desktop='true'][data-window-visibility='hidden'] .app-shell {
+  transform: translate3d(100%, 0, 0);
+}
+
 /* 尊重系统的“减少动态效果”设置，同时保留最终状态与可用性。 */
 @media (prefers-reduced-motion: reduce) {
   *,

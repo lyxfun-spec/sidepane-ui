@@ -8,6 +8,13 @@ declare global {
       beginResize: () => void;
       resizeTo: (screenX: number) => void;
       endResize: () => void;
+      onWindowVisibilityChange: (
+        callback: (state: {
+          visible: boolean;
+          animateFromHidden: boolean;
+          id: number;
+        }) => void
+      ) => () => void;
     };
   }
 }
